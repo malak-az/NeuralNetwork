@@ -16,9 +16,7 @@ class perceptron:
         
         self.w = np.random.uniform(-0.01, 0.01, n_feats)
         self.b = 0.0
-        
-        self.errors_per_epoch = []
-        
+                
         for epoch in range(self.mx_epochs):
             errors = 0
             
@@ -34,20 +32,53 @@ class perceptron:
                     self.w += self.lr * error * x
                     self.b += self.lr * error
                     errors += 1
-                
-                self.errors_per_epoch.append(errors)
-                
-                if errors == 0:
-                    break
+                                
+            if errors == 0:
+                break
         return self 
                 
-    def predict(self, X):
+    def perc_predict(self, X):
         y_pred = []
         for x in X:
             v = np.dot(self.w, x) + self.b
             y_pred.append(self.signum(v))
         return np.array(y_pred)
+
+
+    def adaline(self, X, Y):
+        n_samples, n_feats = X.shape
         
+        self.w = np.random.uniform(-0.01, 0.01, n_feats)
+        self.b = 0.0
+        
+        
+        for epoch in range(self.mx_epochs):
+            errors = 0
+
+            for i in range(n_samples):
+                x=X[i]
+                y=Y[i]  
+
+                y_pred=np.dot(self.w, x) + self.b
+                error = y - y_pred
+
+                if error != 0:
+                    self.w += self.lr * error * x
+                    self.b += self.lr * error
+                    errors += 1
+
+            if errors == 0:
+                break
+
+        return self  
+
+
+    def adaline_predict(self, X):
+        y_pred = []
+        for x in X:
+            v = np.dot(self.w, x) + self.b
+            y_pred.append(v)
+        return np.array(y_pred)
         
          
          
