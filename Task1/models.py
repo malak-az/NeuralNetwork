@@ -54,18 +54,24 @@ class perceptron:
         
         for epoch in range(self.mx_epochs):
             errors = 0
-
+            total_error = 0
             for i in range(n_samples):
                 x=X[i]
                 y=Y[i]  
 
                 y_pred=np.dot(self.w, x) + self.b
-                error = y - y_pred
+                error = (y - y_pred)
 
                 if error != 0:
                     self.w += self.lr * error * x
                     self.b += self.lr * error
                     errors += 1
+
+                total_error += error ** 2
+
+            # Mean squared error
+            self.mse = total_error / n_samples
+
 
             if errors == 0:
                 break
