@@ -1,6 +1,6 @@
 import numpy as np
 
-class perceptron:
+class NN:
     def __init__(self, learning_rate=0.01, mx_epochs=1000):
         self.lr = learning_rate
         self.mx_epochs = mx_epochs
