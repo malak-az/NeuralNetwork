@@ -35,10 +35,10 @@ class perceptron:
                     self.b += self.lr * error
                     errors += 1
                 
-                self.errors_per_epoch.append(errors)
+            self.errors_per_epoch.append(errors)
                 
-                if errors == 0:
-                    break
+            if errors == 0:
+                break
         return self 
                 
     def predict(self, X):
