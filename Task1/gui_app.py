@@ -285,6 +285,9 @@ class PenguinApp(tk.Tk):
         self.canvas.draw_idle()
 
 
+
+
+
 if __name__ == "__main__":
     try:
         app = PenguinApp()

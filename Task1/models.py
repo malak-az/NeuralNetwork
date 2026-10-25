@@ -2,6 +2,10 @@
 import numpy as np
 
 
+
+
+
+
 class NN:
     def __init__(self, lr=0.01, epochs=1000, bias=True, threshold=0.1):
         self.lr = lr
