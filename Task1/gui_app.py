@@ -7,12 +7,10 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-try:
-    from models import NN, confusion_matrix, accuracy
-    from el_sho8l import FEATURES, CSV, load_data, split, standardize
-except ImportError:
-    from .models import NN, confusion_matrix, accuracy
-    from .el_sho8l import FEATURES, CSV, load_data, split, standardize
+
+from models import NN, confusion_matrix, accuracy
+from el_sho8l import FEATURES, penguins, load_preprocess, split, standardize
+
 
 
 class PenguinApp(tk.Tk):
@@ -25,12 +23,12 @@ class PenguinApp(tk.Tk):
         self.trained = False
         self.tested = False
         self.new_point = None
-        self.load_dataset(CSV)
+        self.load_dataset(penguins)
         self.make_interface()
 
     def load_dataset(self, path):
         # loading / preprocessing lives in el_sho8l.py (no UI code there)
-        data = load_data(path)
+        data = load_preprocess(path)
         classes = sorted(data["Species"].dropna().unique())
         if len(classes) < 2:
             raise ValueError("The dataset must contain at least two species.")
@@ -67,8 +65,6 @@ class PenguinApp(tk.Tk):
             box = ttk.Combobox(settings, textvariable=variable, values=values,
                                state="readonly", width=20)
             box.grid(row=row, column=1, sticky="ew", pady=3)
-            if variable is self.class_pair:
-                self.pair_box = box
 
         for row, (label, variable) in enumerate([
             ("Learning rate", self.lr),
@@ -88,7 +84,6 @@ class PenguinApp(tk.Tk):
 
         ttk.Button(left, text="Train", command=self.train).pack(fill="x", pady=(8, 3))
         ttk.Button(left, text="Test", command=self.test).pack(fill="x", pady=3)
-        ttk.Button(left, text="Open CSV", command=self.open_csv).pack(fill="x", pady=3)
 
         self.weights_label = ttk.Label(left, text="Weights and bias will appear here",
                                        wraplength=260)
