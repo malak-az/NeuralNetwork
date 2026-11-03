@@ -1,3 +1,9 @@
+import sys
+import io
+import time
+import itertools
+import contextlib
+
 import pandas as pd
 import numpy as np
 
@@ -331,7 +337,71 @@ def classify_sample(model, raw_values):
     return class_names[int(np.argmax(output))], output.flatten()
 
 
+def tune_hyperparameters():
+    """Grid search. Prints the best settings for each activation function.
+
+    Each network is trained once up to the largest epoch value and evaluated
+    at the checkpoints, so several epoch values are tested without retraining.
+    Run with:  python code.py tune
+    """
+
+    architectures = [[5], [10], [5, 5], [10, 5]]
+    learning_rates = [0.001, 0.01, 0.05, 0.1]
+    checkpoints = [100, 300, 500, 1000]      # epoch values to evaluate
+
+    combos = list(itertools.product(
+        ["sigmoid", "tanh"], [True, False], architectures, learning_rates))
+
+    results = []
+    start = time.time()
+
+    for n, (act, bias, hidden, lr) in enumerate(combos, start=1):
+
+        model = MLP(X_train.shape[1], hidden, len(class_names),
+                    lr, act, bias)
+
+        done = 0
+        for cp in checkpoints:
+            # continue training from where the previous checkpoint stopped
+            with contextlib.redirect_stdout(io.StringIO()):
+                model.train(X_train, y_train, cp - done)
+            done = cp
+
+            train_acc = np.mean(model.predict(X_train) == y_train) * 100
+            test_acc = np.mean(model.predict(X_test) == y_test) * 100
+
+            results.append({
+                "Activation": act,
+                "TrainAcc": round(train_acc, 2),
+                "TestAcc": round(test_acc, 2),
+                "LR": lr,
+                "Epochs": cp,
+                "Layers": len(hidden),
+                "HiddenNodes": ",".join(map(str, hidden)),
+                "Bias": "Yes" if bias else "No",
+            })
+
+        print(f"[{n}/{len(combos)}] {act} bias={bias} {hidden} lr={lr} "
+              f"({time.time() - start:.0f}s elapsed)")
+
+    df = pd.DataFrame(results)
+    df.to_csv("tuning_results.csv", index=False)
+
+    for act in ["sigmoid", "tanh"]:
+        sub = df[df["Activation"] == act].sort_values(
+            ["TestAcc", "TrainAcc", "Epochs"],
+            ascending=[False, False, True])
+
+        print(f"\n===== TOP 10 for {act.upper()} =====")
+        print(sub.head(10).to_string(index=False))
+
+
 if __name__ == "__main__":
+
+    # python code.py tune  ->  run the hyperparameter search instead
+    if len(sys.argv) > 1 and sys.argv[1] == "tune":
+        tune_hyperparameters()
+        sys.exit()
 
     num_hidden_layers = int(input("Enter number of hidden layers: "))
 
